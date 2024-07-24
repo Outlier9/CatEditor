@@ -15,7 +15,6 @@ public:
     bool loadDoc(const QString& docName); //加载文档验证
     void setCurDoc(const QString& docName);
 
-
 signals:
     void copyAvailble(bool available);
 

@@ -23,6 +23,7 @@ public:
     void docNew();
     void docOpen();
 
+
 //槽函数
 private slots:
     void on_newAction_triggered();
@@ -49,6 +50,10 @@ private slots:
 
 
     void on_openAction_triggered();
+
+    void on_saveAction_triggered();
+
+    void on_saveOther_triggered();
 
 private:
     void formatEnable();

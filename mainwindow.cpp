@@ -5,6 +5,7 @@
 #include<QAction>
 #include<QFileDialog>
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -291,4 +292,14 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::on_openAction_triggered()
 {
     docOpen();
+}
+
+void MainWindow::on_saveAction_triggered()
+{
+
+}
+
+void MainWindow::on_saveOther_triggered()
+{
+
 }

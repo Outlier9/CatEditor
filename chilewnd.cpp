@@ -74,3 +74,4 @@ void ChileWnd::updateCopyAction()
 {
     emit copyAvailble(this->textCursor().hasSelection());
 }
+
