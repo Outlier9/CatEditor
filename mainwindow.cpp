@@ -3,6 +3,7 @@
 #include"chilewnd.h"
 #include<QMdiSubWindow>
 #include<QAction>
+#include<QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -61,8 +62,8 @@ void MainWindow::docNew()
 {
     ChileWnd *childwnd = new ChileWnd;
     ui->mdiArea->addSubWindow(childwnd);
-    connect(childwnd, &ChileWnd::copyAvalible, ui->cutAction, &QAction::setEnabled);
-    connect(childwnd, &ChileWnd::copyAvalible, ui->copyAction, &QAction::setEnabled);
+    connect(childwnd, &ChileWnd::copyAvailble, ui->cutAction, &QAction::setEnabled);
+    connect(childwnd, &ChileWnd::copyAvailble, ui->copyAction, &QAction::setEnabled);
 
     childwnd->newDoc();
     childwnd->show();
@@ -70,7 +71,47 @@ void MainWindow::docNew()
 
 void MainWindow::docOpen()
 {
+    QString docName = QFileDialog::getOpenFileName(this,
+                                     "打开文档",
+                                     "",
+                                     "文本文件(*.txt);;"
+                                     "HTML文件(*.html *.htm);;"
+                                     "所有文件(*.*)");
 
+    //如果用户选择了文件并且文件名不为空，则继续执行
+    if(!docName.isEmpty())
+    {
+        //查找是否已经有窗口打开了这个文档。如果找到已经存在的窗口，则将其激活，并返回
+        QMdiSubWindow *existWnd = findChileWnd(docName);
+        if(existWnd)
+        {
+            ui->mdiArea->setActiveSubWindow(existWnd);
+            return;
+        }
+
+        //如果文档尚未被打开，创建一个新的 ChileWnd 子窗口，并将其添加到 QMdiArea 中
+        ChileWnd *childWnd = new ChileWnd;
+        ui->mdiArea->addSubWindow(childWnd);
+        //连接子窗口的信号和主窗口的槽
+        connect(childWnd,SIGNAL(copyAvailable(bool)),
+                ui->cutAction,SLOT(setEnabled(bool)));
+        connect(childWnd,SIGNAL(copyAvailable(bool)),
+                ui->copyAction,SLOT(setEnabled(bool)));
+
+        //加载文档内容
+        if(childWnd->loadDoc(docName))
+        {
+            //显示状态栏信息 "文档已打开" 持续 3 秒
+            statusBar()->showMessage("文档已打开",3000);
+            childWnd->show();
+            formatEnable();
+        }
+        else
+        {
+            //加载失败，则关闭创建的子窗口
+            childWnd->close();
+        }
+    }
 }
 
 
@@ -93,6 +134,24 @@ ChileWnd *MainWindow::activateChildWnd()
         return qobject_cast<ChileWnd*>(actWnd->widget()); //对象类型转换
     else
         return 0;
+}
+
+//匹配子窗口是否存在
+QMdiSubWindow *MainWindow::findChileWnd(const QString &docName)
+{
+    //获取文件的标准路径
+    QString strFile = QFileInfo(docName).canonicalFilePath();
+    //遍历所有子窗口
+    foreach(QMdiSubWindow* subWnd,ui->mdiArea->subWindowList()){
+        //转换子窗口的 widget 为 ChileWnd
+        ChileWnd* childWnd = qobject_cast<ChileWnd*>(subWnd->widget());
+        //比较子窗口的当前文档路径
+        if(childWnd->m_CurDocPath == strFile)
+            //如果相同，表示找到了对应的子窗口，返回该子窗口指针 subWnd
+            return subWnd;
+    }
+    //未找到对应子窗口的情况
+    return 0;
 }
 
 //刷新菜单

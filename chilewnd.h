@@ -12,9 +12,12 @@ public:
     QString m_CurDocPath; // 当前文档路径
     void newDoc(); // 新建文档
     QString getCurDocName(); // 从路径中提取文档名
+    bool loadDoc(const QString& docName); //加载文档验证
+    void setCurDoc(const QString& docName);
+
 
 signals:
-    void copyAvalible(bool available);
+    void copyAvailble(bool available);
 
 private slots:
     void docBeModified(); // 文档修改时，窗口的标题栏加‘*’

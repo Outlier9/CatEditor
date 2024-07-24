@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include<QCloseEvent>
 #include<QSignalMapper>
+#include<QMdiSubWindow>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -52,6 +53,8 @@ private slots:
 private:
     void formatEnable();
     ChileWnd* activateChildWnd();
+    //匹配子窗口是否存在
+    QMdiSubWindow* findChileWnd(const QString &docName);
 
 private:
     Ui::MainWindow *ui;
