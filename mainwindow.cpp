@@ -57,6 +57,13 @@ void MainWindow::initMainWindow()
     //点击窗口菜单项的时候，执行map方法，使setActiveSubWindow响应
     connect(m_WndMapper,SIGNAL(mapped(QWidget*)),this,SLOT(setActiveSubWindow(QWidget*)));
 
+    //对齐方式互斥性,一次只能选一种
+    QActionGroup *alignGroup = new QActionGroup(this);
+    alignGroup->addAction(ui->leftAction);
+    alignGroup->addAction(ui->rightAction);
+    alignGroup->addAction(ui->centerAction);
+    alignGroup->addAction(ui->justifyAction);
+
 }
 
 void MainWindow::docNew()
@@ -115,6 +122,110 @@ void MainWindow::docOpen()
     }
 }
 
+//保存
+void MainWindow::docSave()
+{
+    //如果该活动窗口存在且它的saveDoc返回值为true也就是保存成功
+    if(activateChildWnd() && activateChildWnd()->saveDoc())
+    {
+        statusBar()->showMessage("保存成功",3000);
+    }
+}
+
+//另存为
+void MainWindow::docSaveAs()
+{
+    //如果该活动窗口存在且它的saveDoc返回值为true也就是保存成功
+    if(activateChildWnd() && activateChildWnd()->saveAsDoc())
+    {
+        statusBar()->showMessage("保存成功",3000);
+    }
+}
+
+//撤销（上一步）
+void MainWindow::docUndo()
+{
+    if(activateChildWnd())
+        activateChildWnd()->undo();
+}
+
+//重写（下一步）
+void MainWindow::docRedo()
+{
+    if(activateChildWnd())
+        activateChildWnd()->redo();
+}
+
+//剪切
+void MainWindow::docCut()
+{
+    if(activateChildWnd())
+        activateChildWnd()->cut();
+}
+
+//复制
+void MainWindow::docCopy()
+{
+    if(activateChildWnd())
+        activateChildWnd()->copy();
+}
+
+//粘贴
+void MainWindow::docPaste()
+{
+    if(activateChildWnd())
+        activateChildWnd()->paste();
+}
+
+//加粗
+void MainWindow::textBold()
+{
+    QTextCharFormat fmt;
+    fmt.setFontWeight(ui->blodAction->isChecked() ? QFont::Bold : QFont::Normal);
+    if(activateChildWnd())
+        activateChildWnd()->setFormatOnSelectedWord(fmt);
+}
+
+//倾斜
+void MainWindow::textItalic()
+{
+    QTextCharFormat fmt;
+    fmt.setFontItalic(ui->inclineAction->isChecked());
+    if(activateChildWnd())
+        activateChildWnd()->setFormatOnSelectedWord(fmt);
+}
+
+//下划线
+void MainWindow::textUnderline()
+{
+    QTextCharFormat fmt;
+    fmt.setFontUnderline(ui->underlineAction->isChecked());
+    if(activateChildWnd())
+        activateChildWnd()->setFormatOnSelectedWord(fmt);
+}
+
+//设置字体
+void MainWindow::textFamily(const QString &fmly)
+{
+    QTextCharFormat fmt;
+    fmt.setFontFamily(fmly);
+    if(activateChildWnd())
+        activateChildWnd()->setFormatOnSelectedWord(fmt);
+}
+
+//设置字号
+void MainWindow::textSize(const QString &ps)
+{
+    qreal pointSize = ps.toFloat();
+    if(ps.toFloat() > 0)
+    {
+        QTextCharFormat fmt;
+        fmt.setFontPointSize(pointSize);
+        if(activateChildWnd())
+            activateChildWnd()->setFormatOnSelectedWord(fmt);
+    }
+}
+
 
 void MainWindow::formatEnable()
 {
@@ -168,7 +279,7 @@ void MainWindow::refreshMenus()
     ui->pasteAction->setEnabled(hasChild);
     ui->closeAction->setEnabled(hasChild);
     ui->closeAllAction->setEnabled(hasChild);
-    ui->titleAction->setEnabled(hasChild);
+    ui->tileAction->setEnabled(hasChild);
     ui->cascadeAction->setEnabled(hasChild);
     ui->nextAction->setEnabled(hasChild);
     ui->previousAction->setEnabled(hasChild);
@@ -196,7 +307,7 @@ void MainWindow::addSubWndListMenu()
     ui->menu_W->addAction(ui->closeAction);
     ui->menu_W->addAction(ui->closeAllAction);
     ui->menu_W->addSeparator();
-    ui->menu_W->addAction(ui->titleAction);
+    ui->menu_W->addAction(ui->tileAction);
     ui->menu_W->addAction(ui->cascadeAction);
     ui->menu_W->addSeparator();
     ui->menu_W->addAction(ui->nextAction);
@@ -246,7 +357,7 @@ void MainWindow::on_closeAllAction_triggered()
     ui->mdiArea->closeAllSubWindows();
 }
 
-void MainWindow::on_titleAction_triggered()
+void MainWindow::on_tileAction_triggered()
 {
     ui->mdiArea->tileSubWindows();
 }
@@ -296,10 +407,84 @@ void MainWindow::on_openAction_triggered()
 
 void MainWindow::on_saveAction_triggered()
 {
-
+    docSave();
 }
 
 void MainWindow::on_saveOther_triggered()
 {
+    docSaveAs();
+}
 
+void MainWindow::on_undoAction_triggered()
+{
+    docUndo();
+}
+
+void MainWindow::on_redoAction_triggered()
+{
+    docRedo();
+}
+
+void MainWindow::on_cutAction_triggered()
+{
+    docCut();
+}
+
+void MainWindow::on_copyAction_triggered()
+{
+    docCopy();
+}
+
+void MainWindow::on_pasteAction_triggered()
+{
+    docPaste();
+}
+
+void MainWindow::on_blodAction_triggered()
+{
+    textBold();
+}
+
+void MainWindow::on_inclineAction_triggered()
+{
+    textItalic();
+}
+
+void MainWindow::on_underlineAction_triggered()
+{
+    textUnderline();
+}
+
+void MainWindow::on_fontComboBox_activated(const QString &arg1)
+{
+    textFamily(arg1);
+}
+
+void MainWindow::on_sizeComboBox_activated(const QString &arg1)
+{
+    textSize(arg1);
+}
+
+void MainWindow::on_leftAction_triggered()
+{
+    if(activateChildWnd())
+        activateChildWnd()->setAlignOfDocumentText(1);
+}
+
+void MainWindow::on_rightAction_triggered()
+{
+    if(activateChildWnd())
+        activateChildWnd()->setAlignOfDocumentText(2);
+}
+
+void MainWindow::on_centerAction_triggered()
+{
+    if(activateChildWnd())
+        activateChildWnd()->setAlignOfDocumentText(3);
+}
+
+void MainWindow::on_justifyAction_triggered()
+{
+    if(activateChildWnd())
+        activateChildWnd()->setAlignOfDocumentText(4);
 }

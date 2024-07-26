@@ -162,7 +162,7 @@
     </property>
     <addaction name="closeAction"/>
     <addaction name="closeAllAction"/>
-    <addaction name="titleAction"/>
+    <addaction name="tileAction"/>
     <addaction name="cascadeAction"/>
     <addaction name="nextAction"/>
     <addaction name="previousAction"/>
@@ -335,7 +335,7 @@
     <string>撤销(U)</string>
    </property>
    <property name="statusTip">
-    <string>撤销一步</string>
+    <string>撤销（上一步）</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+U</string>
@@ -350,7 +350,7 @@
     <string>重做(R)</string>
    </property>
    <property name="statusTip">
-    <string>重做</string>
+    <string>重做（下一步）</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
@@ -417,6 +417,9 @@
    </property>
   </action>
   <action name="inclineAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="res.qrc">
      <normaloff>:/images/incline.png</normaloff>:/images/incline.png</iconset>
@@ -433,6 +436,9 @@
    </property>
   </action>
   <action name="underlineAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="res.qrc">
      <normaloff>:/images/underline.png</normaloff>:/images/underline.png</iconset>
@@ -535,7 +541,7 @@
     <string>关闭所有</string>
    </property>
   </action>
-  <action name="titleAction">
+  <action name="tileAction">
    <property name="text">
     <string>平铺(T)</string>
    </property>
@@ -589,6 +595,9 @@
    </property>
   </action>
   <action name="blodAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="res.qrc">
      <normaloff>:/images/Bold.png</normaloff>:/images/Bold.png</iconset>

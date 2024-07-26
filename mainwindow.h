@@ -20,8 +20,21 @@ public:
     ~MainWindow();
 
     void initMainWindow();
-    void docNew();
-    void docOpen();
+    void docNew(); //新建
+    void docOpen(); //打开
+    void docSave(); //保存
+    void docSaveAs(); //另存为
+    void docUndo(); //撤销（上一步）
+    void docRedo(); //重写(下一步)
+    void docCut(); //剪切
+    void docCopy(); //复制
+    void docPaste(); //粘贴
+    void textBold(); //加粗
+    void textItalic(); //倾斜
+    void textUnderline(); //下划线
+    void textFamily(const QString &fmly); //设置字体
+    void textSize(const QString &ps); //设置字号
+
 
 
 //槽函数
@@ -34,7 +47,7 @@ private slots:
 
     void on_closeAllAction_triggered();
 
-    void on_titleAction_triggered();
+    void on_tileAction_triggered();
 
     void on_cascadeAction_triggered();
 
@@ -54,6 +67,34 @@ private slots:
     void on_saveAction_triggered();
 
     void on_saveOther_triggered();
+
+    void on_undoAction_triggered();
+
+    void on_redoAction_triggered();
+
+    void on_cutAction_triggered();
+
+    void on_copyAction_triggered();
+
+    void on_pasteAction_triggered();
+
+    void on_blodAction_triggered();
+
+    void on_inclineAction_triggered();
+
+    void on_underlineAction_triggered();
+
+    void on_fontComboBox_activated(const QString &arg1);
+
+    void on_sizeComboBox_activated(const QString &arg1);
+
+    void on_leftAction_triggered();
+
+    void on_rightAction_triggered();
+
+    void on_centerAction_triggered();
+
+    void on_justifyAction_triggered();
 
 private:
     void formatEnable();
