@@ -19,6 +19,7 @@ public:
     bool saveDocOpt(QString docName); //保存文件的操作逻辑
     void setFormatOnSelectedWord(const QTextCharFormat &fmt);//对选中的字体格式进行设置
     void setAlignOfDocumentText(int aligntype); //设置段落对齐方式
+    void setParaSyle(int pstyle); //设置项目符号
 
 protected:
     void closeEvent(QCloseEvent *event); //关闭事件发生时，进行未保存该文档提示

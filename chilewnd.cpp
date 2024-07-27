@@ -4,6 +4,9 @@
 #include<QTextDocumentWriter>
 #include<QMessageBox>
 #include<QCloseEvent>
+#include<QTextBlock>
+#include<QTextList>
+#include<QtWidgets>
 
 ChileWnd::ChileWnd()
 {
@@ -142,6 +145,82 @@ void ChileWnd::setAlignOfDocumentText(int aligntype)
     else if(aligntype == 4)
     {
         setAlignment(Qt::AlignJustify);
+    }
+}
+
+void ChileWnd::setParaSyle(int pstyle)
+{
+    // 获取当前文本光标
+    QTextCursor tcursor = textCursor();
+    // 声明一个 QTextListFormat::Style 变量，用于存储列表样式
+    QTextListFormat::Style sname;
+    // 如果 pstyle 不为 0，设置列表样式
+    if(pstyle != 0)
+    {
+        // 根据 pstyle 的值设置不同的列表样式
+        switch (pstyle) {
+        case 1:
+            sname = QTextListFormat::ListDisc; //黑心实心圆
+            break;
+        case 2:
+            sname = QTextListFormat::ListCircle; //空心圆
+            break;
+        case 3:
+            sname = QTextListFormat::ListSquare; //方形
+            break;
+        case 4:
+            sname = QTextListFormat::ListDecimal; //十进制整数
+            break;
+        case 5:
+            sname = QTextListFormat::ListLowerAlpha; //小写字母
+            break;
+        case 6:
+            sname = QTextListFormat::ListUpperAlpha; //大写字母
+            break;
+        case 7:
+            sname = QTextListFormat::ListLowerRoman; //小写罗马字母
+            break;
+        case 8:
+            sname = QTextListFormat::ListUpperRoman; //大写罗马字母
+            break;
+        default:
+            sname = QTextListFormat::ListDisc;
+        }
+
+        // 开始编辑块
+        tcursor.beginEditBlock();
+        // 获取当前段落格式
+        QTextBlockFormat tBlockFmt = tcursor.blockFormat();
+        // 声明一个 QTextListFormat 变量，用于存储列表格式
+        QTextListFormat tListFmt;
+        // 如果当前光标所在位置已经有列表
+        if(tcursor.currentList())
+        {
+            // 获取当前列表的格式
+            // 使用format方法需要添加头文件QtWidgets
+            tListFmt = tcursor.currentList()->format();
+        }
+        else
+        {
+            // 如果没有列表，设置新的列表格式
+            tListFmt.setIndent(tBlockFmt.indent()+1);
+            tBlockFmt.setIndent(0);
+            tcursor.setBlockFormat(tBlockFmt);
+        }
+
+        // 设置列表样式
+        tListFmt.setStyle(sname);
+        // 创建列表
+        tcursor.createList(tListFmt);
+        // 结束编辑块
+        tcursor.endEditBlock();
+    }
+    else
+    {
+        // 如果 pstyle 为 0，清除列表格式
+        QTextBlockFormat tbfmt;
+        tbfmt.setObjectIndex(-1);
+        tcursor.mergeBlockFormat(tbfmt);
     }
 }
 

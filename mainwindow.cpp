@@ -4,6 +4,10 @@
 #include<QMdiSubWindow>
 #include<QAction>
 #include<QFileDialog>
+#include<QColorDialog>
+#include<QtPrintSupport/QPrinter>
+#include<QtPrintSupport/QPrintDialog>
+#include<QtPrintSupport/QPrintPreviewDialog>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -142,6 +146,33 @@ void MainWindow::docSaveAs()
     }
 }
 
+void MainWindow::docPrint()
+{
+    QPrinter pter(QPrinter::HighResolution);
+    QPrintDialog *ddlg = new QPrintDialog(&pter,this);
+    if(activateChildWnd())
+        ddlg->setOption(QAbstractPrintDialog::PrintSelection,true);
+    ddlg->setWindowTitle("打印文档");
+
+    ChileWnd *chilewnd = activateChildWnd();
+    if(ddlg->exec() == QDialog::Accepted)
+        chilewnd->print(&pter);
+    delete ddlg;
+}
+
+//每当预览对话框需要绘制预览时，都会触发 paintRequested 信号，从而调用 printPreview 槽函数
+void MainWindow::docPrintPreview()
+{
+    // 创建一个 QPrinter 对象
+    QPrinter pter;
+    // 创建一个 QPrintPreviewDialog 对象，并将 pter 作为参数传递，同时设置父窗口为 this
+    QPrintPreviewDialog preview(&pter,this);
+    // 连接预览对话框的 paintRequested 信号到 MainWindow 的 printPreview 槽函数
+    connect(&preview,SIGNAL(paintRequested(QPrinter*)),this,SLOT(printPreview(QPrinter*)));
+    // 显示打印预览对话框
+    preview.exec();
+}
+
 //撤销（上一步）
 void MainWindow::docUndo()
 {
@@ -224,6 +255,34 @@ void MainWindow::textSize(const QString &ps)
         if(activateChildWnd())
             activateChildWnd()->setFormatOnSelectedWord(fmt);
     }
+}
+
+void MainWindow::textColor()
+{
+    if(activateChildWnd())
+    {
+        // 弹出颜色选择对话框，并以当前激活子窗口的文本颜色作为初始颜色
+        QColor color = QColorDialog::getColor(activateChildWnd()->textColor(),this);
+        // 检查用户是否选择了有效的颜色
+        if(!color.isValid())
+            return;
+        QTextCharFormat fmt;
+        // 设置文本字符格式的前景色（文本颜色）
+        fmt.setForeground(color);
+        activateChildWnd()->setFormatOnSelectedWord(fmt);
+
+        // 创建一个16x16像素的像素图，并用所选颜色填充
+        QPixmap pix(16,16);
+        pix.fill(color);
+        // 将填充了颜色的像素图设置为某个动作（按钮）的图标
+        ui->colorAction->setIcon(pix);
+    }
+}
+
+void MainWindow::paraStyle(int nStyle)
+{
+    if(activateChildWnd())
+        activateChildWnd()->setParaSyle(nStyle);
 }
 
 
@@ -487,4 +546,30 @@ void MainWindow::on_justifyAction_triggered()
 {
     if(activateChildWnd())
         activateChildWnd()->setAlignOfDocumentText(4);
+}
+
+void MainWindow::on_colorAction_triggered()
+{
+    textColor();
+}
+
+//项目符号
+void MainWindow::on_comboBox_activated(int index)
+{
+   paraStyle(index);
+}
+
+void MainWindow::on_printAction_triggered()
+{
+    docPrint();
+}
+
+void MainWindow::on_printPreviewAction_triggered()
+{
+    docPrintPreview();
+}
+
+void MainWindow::printPreview(QPrinter *printer)
+{
+    activateChildWnd()->print(printer);
 }

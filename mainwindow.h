@@ -6,6 +6,7 @@
 #include<QCloseEvent>
 #include<QSignalMapper>
 #include<QMdiSubWindow>
+#include<QtPrintSupport/QPrinter>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -24,6 +25,8 @@ public:
     void docOpen(); //打开
     void docSave(); //保存
     void docSaveAs(); //另存为
+    void docPrint();//文档打印
+    void docPrintPreview(); //打印预览
     void docUndo(); //撤销（上一步）
     void docRedo(); //重写(下一步)
     void docCut(); //剪切
@@ -34,6 +37,8 @@ public:
     void textUnderline(); //下划线
     void textFamily(const QString &fmly); //设置字体
     void textSize(const QString &ps); //设置字号
+    void textColor(); //设置颜色
+    void paraStyle(int nStyle); //设置项目符号
 
 
 
@@ -95,6 +100,16 @@ private slots:
     void on_centerAction_triggered();
 
     void on_justifyAction_triggered();
+
+    void on_colorAction_triggered();
+
+    void on_comboBox_activated(int index);
+
+    void on_printAction_triggered();
+
+    void on_printPreviewAction_triggered();
+
+    void printPreview(QPrinter* printer); //打印预览槽函数
 
 private:
     void formatEnable();
