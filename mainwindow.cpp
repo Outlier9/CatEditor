@@ -74,8 +74,20 @@ void MainWindow::docNew()
 {
     ChileWnd *childwnd = new ChileWnd;
     ui->mdiArea->addSubWindow(childwnd);
-    connect(childwnd, &ChileWnd::copyAvailble, ui->cutAction, &QAction::setEnabled);
-    connect(childwnd, &ChileWnd::copyAvailble, ui->copyAction, &QAction::setEnabled);
+//    connect(childwnd, &ChileWnd::copyAvailble, ui->cutAction, &QAction::setEnabled);
+//    connect(childwnd, &ChileWnd::copyAvailble, ui->copyAction, &QAction::setEnabled);
+
+    //将各种功能设置为可用状态
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->cutAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->copyAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->leftAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->rightAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->centerAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->justifyAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->blodAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->inclineAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->underlineAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->colorAction,SLOT(setEnabled(bool)));
 
     childwnd->newDoc();
     childwnd->show();

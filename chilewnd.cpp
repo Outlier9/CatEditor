@@ -84,10 +84,14 @@ bool ChileWnd::saveDoc()
 bool ChileWnd::saveAsDoc()
 {
     QString docName = QFileDialog::getSaveFileName(this,
-                                 "另存为",
-                                 m_CurDocPath,
-                                 "HTML文件(*.html *.htm);;"
-                                 "所有文档(*.*)");
+                                     "另存为",
+                                     "文档.txt", // 默认保存为 txt 格式
+                                     "文本文件(*.txt);;"
+                                     "HTML文件(*.html *.htm);;"
+                                     "Word文件(*.doc *.docx);;"
+                                     "PDF文件(*.pdf);;"
+                                     "图片文件(*.png *.jpg *.jpeg *.bmp);;"
+                                     "所有文件(*.*)");
     if(docName.isEmpty())
         return false;
     else

@@ -194,10 +194,31 @@ void MainWindow::docNew()
 {
     ChileWnd *childwnd = new ChileWnd;
     ui->mdiArea->addSubWindow(childwnd);
-    connect(childwnd, &ChileWnd::copyAvailble, ui->cutAction, &QAction::setEnabled);
-    connect(childwnd, &ChileWnd::copyAvailble, ui->copyAction, &QAction::setEnabled);
+    // connect(childwnd, &ChileWnd::copyAvailble, ui->cutAction, &QAction::setEnabled);
+    // connect(childwnd, &ChileWnd::copyAvailble, ui->copyAction, &QAction::setEnabled);
+
+    void MainWindow::docNew()
+{
+    ChileWnd *childwnd = new ChileWnd;
+    ui->mdiArea->addSubWindow(childwnd);
+//    connect(childwnd, &ChileWnd::copyAvailble, ui->cutAction, &QAction::setEnabled);
+//    connect(childwnd, &ChileWnd::copyAvailble, ui->copyAction, &QAction::setEnabled);
+
+    //将各种功能设置为可用状态
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->cutAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->copyAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->leftAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->rightAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->centerAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->justifyAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->blodAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->inclineAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->underlineAction,SLOT(setEnabled(bool)));
+    connect(childwnd,SIGNAL(copyAvailable(bool)),ui->colorAction,SLOT(setEnabled(bool)));
 
     childwnd->newDoc();
+    childwnd->show();
+}childwnd->newDoc();
     childwnd->show();
 }
 ```
@@ -307,65 +328,6 @@ void MainWindow::addSubWndListMenu()
 }
 ```
 
-------
-
-分割线-------------------------------------------------------突发Bug-----------------------------------------------------------
-
-![img](https://cdn.nlark.com/yuque/0/2024/png/29309193/1721712866369-27432c96-80d7-458a-a1fb-fb8ac85a36df.png)
-
-做到这里时，新建文件就会出现这样的错误，根据报错提示我也去查看了剪切和复制Action，此时无法点击，明显为未启用状态，然后详看报错信息，是连接信号和槽的问题，也就是这两行代码：
-
-```cpp
-connect(childwnd,SIGNAL(copyAvailble(bool)),ui->cutAction,SLOT(setAvailable(bool)));
-connect(childwnd,SIGNAL(copyAvailble(bool)),ui->copyAction,SLOT(setAvailable(bool)));
-```
-
-然后我将错误信息复制给了GPT，让他告诉我几种排查思路：
-
-1.  检查是否包含 `Q_OBJECT` 宏  √
-2.  检查信号和槽的拼写  （根据代码自动补全提示写的，没有出错）√
-3. 检查 Qt 对象树确保 `ui->cutAction` 和 `ui->copyAction` 是有效的 Qt 对象（Action是在`.ui`界面创建的，无误）√
-4.  确保 `ChileWnd` 类中正确声明了 `copyAvalible(bool)` 信号。信号应该用 `signals` 关键字声明在类的 `public` 或 `protected` 部分  （我想了想，并没有声明copyAvalible信号，但是这里使用的是SIGNAL，按理来说不用自己实现）有待确认
-5.  从 Qt 5 开始，引入了新的信号和槽语法，基于函数指针而不是字符串。 有待确认
-
-```
-connect(childwnd, &ChileWnd::copyAvalible, ui->cutAction, &QAction::setEnabled);  
-connect(childwnd, &ChileWnd::copyAvalible, ui->copyAction, &QAction::setEnabled);  
-```
-
-这跟我现在写的确实有出入，
-
-所以现在我需要先检查我在实现chilewnd类的时候是否有实现相关函数的声明，我将该类相关代码丢给了GPT，然后他给出了我解决方案，正好是对应的第五点的解决方案，所以到这里报错原因便清楚了，因为Qt的语法原因，以下是GPT给出的解释
-
- 在Qt中，信号和槽的连接有两种语法：旧语法（基于字符串的方式）和新语法（基于函数指针的方式）。这两种语法的工作原理有所不同，因此在某些情况下会导致连接失败。以下是这两种语法的对比及解释：  
-
-```cpp
-connect(childwnd, SIGNAL(copyAvalible(bool)), ui->cutAction, SLOT(setAvailable(bool)));
-connect(childwnd, SIGNAL(copyAvalible(bool)), ui->copyAction, SLOT(setAvailable(bool)));
-```
-
-旧语法使用字符串表示信号和槽。这种方式在运行时进行解析，因此更容易出错。例如，拼写错误或参数类型不匹配不会在编译时被捕捉到，而是会导致运行时错误。具体到你的情况，旧语法的问题可能出在以下几点：
-
-1. **拼写错误**：`setAvailable` 可能并不是 `QAction` 类的槽函数。实际上，`QAction` 类的槽函数是 `setEnabled`，而不是 `setAvailable`。
-2. **参数类型不匹配**：即使信号和槽的参数类型相同，旧语法的字符串表示方式在某些情况下可能会出现问题，特别是在处理自定义信号和槽时。
-
-```cpp
-connect(childwnd, &ChileWnd::copyAvalible, ui->cutAction, &QAction::setEnabled);
-connect(childwnd, &ChileWnd::copyAvalible, ui->copyAction, &QAction::setEnabled);
-```
-
-新语法使用函数指针，提供了编译时的类型检查，避免了拼写错误和参数类型不匹配的问题。具体来说，新语法的优点包括：
-
-1. **编译时检查**：可以在编译时检测到拼写错误和参数类型不匹配，而不是在运行时。
-2. **类型安全**：函数指针确保了信号和槽的类型匹配，避免了由于字符串解析错误引起的问题。
-3. **更好的代码可读性和可维护性**：由于使用函数指针，代码更清晰，容易理解和维护。
-
-关于这一bug，根据GPT的提示进行了代码的修改，确实修复了，目前暂且归咎于Qt的语法问题上，相关的改正代码直接显示在代码中，不做专门介绍
-
-分割线-------------------------------------------------------突发Bug-----------------------------------------------------------
-
-------
-
 **②点击列表项也能实现文档的焦点切换功能**
 
 这里需要使用信号映射器，并在构造函数中（也就是初始化）实现该机制，
@@ -402,21 +364,21 @@ connect(m_WndMapper,SIGNAL(mapped(QWidget*)),this,SLOT(setActiveSubWindow(QWidge
 - 当 `m_WndMapper` 的 `map` 方法被调用时，它会发出 `mapped` 信号，并传递一个 `QWidget*` 参数（参数需要单独设置，使用`setMapping`），这个信号被连接到 `MainWindow` 类的 `setActiveSubWindow` 槽函数。
 - `MainWindow` 类的 `setActiveSubWindow` 方法被调用，并传递参数后，这个方法负责将设置参数中指定的窗口为当前活动的子窗口。
 
-> 拓展：信号映射器的使用场景
->
-> **动态信号连接**：当你需要在运行时动态地将信号连接到槽函数时，信号映射器非常有用。例如，你可以在创建对象时决定将哪个信号连接到哪个槽。
->
-> **参数传递**：有些信号不提供足够的参数或不提供你需要的参数类型。使用信号映射器可以将信号与一个参数化的槽函数连接，从而传递额外的信息。
->
-> **简化代码**：当多个信号需要触发相同的槽函数，但每个信号需要传递不同的参数时，信号映射器可以简化代码。你不需要为每个信号编写单独的连接代码。
->
-> **解耦信号和槽**：信号映射器提供了一种将信号源和槽函数解耦的方法。这使得代码更加模块化，易于维护和扩展。
->
-> **处理复杂的用户界面事件**：在复杂的用户界面中，可能有许多按钮或其他控件需要触发不同的操作。使用信号映射器可以根据控件的不同状态或类型来调用不同的槽函数。
->
-> **实现自定义的信号分发**：如果你需要根据某些条件或逻辑来决定如何响应信号，信号映射器可以作为一个中间件来实现自定义的信号分发逻辑。
->
-> **多信号到单槽的映射**：当多个不同的信号需要调用同一个槽函数，但每个信号需要传递不同的参数时，信号映射器可以统一这些信号到一个槽函数。
+拓展：信号映射器的使用场景
+
+**动态信号连接**：当你需要在运行时动态地将信号连接到槽函数时，信号映射器非常有用。例如，你可以在创建对象时决定将哪个信号连接到哪个槽。
+
+**参数传递**：有些信号不提供足够的参数或不提供你需要的参数类型。使用信号映射器可以将信号与一个参数化的槽函数连接，从而传递额外的信息。
+
+**简化代码**：当多个信号需要触发相同的槽函数，但每个信号需要传递不同的参数时，信号映射器可以简化代码。你不需要为每个信号编写单独的连接代码。
+
+**解耦信号和槽**：信号映射器提供了一种将信号源和槽函数解耦的方法。这使得代码更加模块化，易于维护和扩展。
+
+**处理复杂的用户界面事件**：在复杂的用户界面中，可能有许多按钮或其他控件需要触发不同的操作。使用信号映射器可以根据控件的不同状态或类型来调用不同的槽函数。
+
+**实现自定义的信号分发**：如果你需要根据某些条件或逻辑来决定如何响应信号，信号映射器可以作为一个中间件来实现自定义的信号分发逻辑。
+
+**多信号到单槽的映射**：当多个不同的信号需要调用同一个槽函数，但每个信号需要传递不同的参数时，信号映射器可以统一这些信号到一个槽函数。
 
 ![img](https://cdn.nlark.com/yuque/0/2024/png/29309193/1722006963161-053c8b34-cbaf-4bb0-b141-aca60959f7c0.png)
 
@@ -612,9 +574,13 @@ bool ChileWnd::saveAsDoc()
 {
     QString docName = QFileDialog::getSaveFileName(this,
                                  "另存为",
-                                 m_CurDocPath,
+                                 "文档.txt", // 默认保存为 txt 格式
+                                 "文本文件(*.txt);;"
                                  "HTML文件(*.html *.htm);;"
-                                 "所有文档(*.*)");
+                                 "Word文件(*.doc *.docx);;"
+                                 "PDF文件(*.pdf);;"
+                                 "图片文件(*.png *.jpg *.jpeg *.bmp);;"
+                                 "所有文件(*.*)");
     if(docName.isEmpty())
         return false;
     else
@@ -965,7 +931,7 @@ void MainWindow::on_centerAction_triggered()
 void MainWindow::on_justifyAction_triggered()
 {
     if(activateChildWnd())
-        activateChildWnd()->setAlignOfDocumentText(1=4);
+        activateChildWnd()->setAlignOfDocumentText(4);
 }
 ```
 
@@ -1192,71 +1158,22 @@ void MainWindow::printPreview(QPrinter *printer)
 
 解答：当将一个 `ChileWnd` 实例添加到 `QMdiArea` 中时，它会自动成为一个子窗口。`ChileWnd` 本质上是继承自 `QTextEdit` 的一个自定义类，因此它具备 `QTextEdit` 的所有功能，并且可以被添加到 `QMdiArea` 中管理。在 Qt 的 `QMdiArea` 中，**任何继承自** `**QWidget**` **的类都可以作为子窗口添加，不需要特别考虑类型，只要是** `**QWidget**` **或其子类都可以。你可以将其理解为任何可以显示的控件都可以添加到** `**QMdiArea**` **中，而** `**QMdiArea**` **会将其作为子窗口处理。**
 
-## 2.关于信号与槽语法的bug
+## 2.关于给窗体设置图标的时候遇到的bug
 
-该bug在文中项目过程中有同样的阐述，这里是做一个集合整理再次阐述
-
-突发Bug：
-
-![img](https://cdn.nlark.com/yuque/0/2024/png/29309193/1721712866369-27432c96-80d7-458a-a1fb-fb8ac85a36df.png)
-
-做到这里时，新建文件就会出现这样的错误，根据报错提示我也去查看了剪切和复制Action，此时无法点击，明显为未启用状态，然后详看报错信息，是连接信号和槽的问题，也就是这两行代码：
-
-```cpp
-connect(childwnd,SIGNAL(copyAvalible(bool)),ui->cutAction,SLOT(setAvailable(bool)));
-connect(childwnd,SIGNAL(copyAvalible(bool)),ui->copyAction,SLOT(setAvailable(bool)));
-```
-
-然后我将错误信息复制给了GPT，让他告诉我几种排查思路：
-
-1.  检查是否包含 `Q_OBJECT` 宏  √
-2.  检查信号和槽的拼写  （根据代码自动补全提示写的，没有出错）√
-3. 检查 Qt 对象树确保 `ui->cutAction` 和 `ui->copyAction` 是有效的 Qt 对象（Action是在`.ui`界面创建的，无误）√
-4.  确保 `ChileWnd` 类中正确声明了 `copyAvalible(bool)` 信号。信号应该用 `signals` 关键字声明在类的 `public` 或 `protected` 部分  （我想了想，并没有声明copyAvalible信号，但是这里使用的是SIGNAL，按理来说不用自己实现）有待确认
-5.  从 Qt 5 开始，引入了新的信号和槽语法，基于函数指针而不是字符串。 有待确认
-
-```
-connect(childwnd, &ChileWnd::copyAvalible, ui->cutAction, &QAction::setEnabled);  
-connect(childwnd, &ChileWnd::copyAvalible, ui->copyAction, &QAction::setEnabled);  
-```
-
-这跟我现在写的确实有出入，
-
-所以现在我需要先检查我在实现chilewnd类的时候是否有实现相关函数的声明，我将该类相关代码丢给了GPT，然后他给出了我解决方案，正好是对应的第五点的解决方案，所以到这里报错原因便清楚了，因为Qt的语法原因，以下是GPT给出的解释
-
- 在Qt中，信号和槽的连接有两种语法：旧语法（基于字符串的方式）和新语法（基于函数指针的方式）。这两种语法的工作原理有所不同，因此在某些情况下会导致连接失败。以下是这两种语法的对比及解释：  
-
-```cpp
-connect(childwnd, SIGNAL(copyAvalible(bool)), ui->cutAction, SLOT(setAvailable(bool)));
-connect(childwnd, SIGNAL(copyAvalible(bool)), ui->copyAction, SLOT(setAvailable(bool)));
-```
-
-旧语法使用字符串表示信号和槽。这种方式在运行时进行解析，因此更容易出错。例如，拼写错误或参数类型不匹配不会在编译时被捕捉到，而是会导致运行时错误。具体到你的情况，旧语法的问题可能出在以下几点：
-
-1. **拼写错误**：`setAvailable` 可能并不是 `QAction` 类的槽函数。实际上，`QAction` 类的槽函数是 `setEnabled`，而不是 `setAvailable`。
-2. **参数类型不匹配**：即使信号和槽的参数类型相同，旧语法的字符串表示方式在某些情况下可能会出现问题，特别是在处理自定义信号和槽时。
-
-```cpp
-connect(childwnd, &ChileWnd::copyAvalible, ui->cutAction, &QAction::setEnabled);
-connect(childwnd, &ChileWnd::copyAvalible, ui->copyAction, &QAction::setEnabled);
-```
-
-新语法使用函数指针，提供了编译时的类型检查，避免了拼写错误和参数类型不匹配的问题。具体来说，新语法的优点包括：
-
-1. **编译时检查**：可以在编译时检测到拼写错误和参数类型不匹配，而不是在运行时。
-2. **类型安全**：函数指针确保了信号和槽的类型匹配，避免了由于字符串解析错误引起的问题。
-3. **更好的代码可读性和可维护性**：由于使用函数指针，代码更清晰，容易理解和维护。
-
-关于这一bug，根据GPT的提示进行了代码的修改，确实修复了，目前暂且归咎于Qt的语法问题上，相关的改正代码直接显示在代码中，不做专门介绍
-
-## 3.关于给窗体设置图标的时候遇到的bug
-
-① 报错：**[Makefile:84:WPS resource res.o]Error 1** 
+① [Makefile:84:WPS resource res.o]Error 1 
 
 检查icon文件格式，不能直接png等图片改后缀，要用专门的工具进行格式转换
 
 [图片转ICO-在线图片格式转换-批量图片格式转换工具](https://www.iyasuo.com/toico)
 
-② 报错：**No rule to make target '../WPS/images/icon.png',needed by'arc_res.cpp'.Stop.** 
+② No rule to make target '../WPS/images/icon.png',needed by'arc_res.cpp'.Stop. 
 
 名称不能有中文，可以试试修改路径中的中文，不过我的路径中均为英文，遇到这个错误是因为将images中的png直接转后缀为ico文件后，又上传了qrc中，两个命名重复且已上传到qrc中的png图片已不存在，我将这还原以后就不再报错了，所以这里的图片操作要规范，不能图省事
+
+# 四、bug修复日志
+
+7.27-----修复-----新建文档后输入内容选中无法设置段落对齐方式以及字体格式的bug
+
+7.27-----完善-----将保存格式从一种（html）添加到office能保存的所有格式，并设置默认格式为txt
+
+7.27-----修复-----新建文档的槽函数报错，以前使用新语法解决该问题，以为是语法的错误，后发现槽函数应设置setEnable，写成了setAvaliable，导致槽函数无法使用，已改正，以前的解决方式也可以，在原文中注释

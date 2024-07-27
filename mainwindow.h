@@ -45,7 +45,9 @@ public:
 //槽函数
 private slots:
     void on_newAction_triggered();
+
     void refreshMenus();
+
     void addSubWndListMenu();
 
     void on_closeAction_triggered();
